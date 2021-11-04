@@ -37,7 +37,7 @@ class TransformerEncoderLayer(nn.Module):
 
   def forward(self, inp: nn.LayerRef) -> nn.LayerRef:
     """
-    Two possible forward variants of encoder, defined by self.norm_first
+    Two possible forward variants of encoder, defined by self.norm_first, inp has shape (B, T, F)
     """
     x = inp
     if self.norm_first:
@@ -127,7 +127,7 @@ class TransformerDecoderLayer(nn.Module):
 
   def forward(self, tgt: nn.LayerRef, memory: nn.LayerRef) -> nn.LayerRef:
     """
-    Two possible forward variants of decoder, defined by self.norm_first
+    Two possible forward variants of decoder, defined by self.norm_first, tgt and memory have shape (B, T, F)
     """
     x = tgt
     if self.norm_first:
@@ -196,13 +196,13 @@ class Transformer(nn.Module):
   """
   Standard Transformer Module
   """
-  def __init__(self, dim_model: int = 512, num_heads: int = 8, num_encoder_layers: int = 6,
+  def __init__(self, output_dim: int = 512, num_heads: int = 8, num_encoder_layers: int = 6,
                num_decoder_layers: int = 6, dim_ff: int = 2048, drop: float = 0.1,
                activation: Callable[[nn.LayerRef], nn.LayerRef] = nn.relu,
                custom_encoder: Optional[Any] = None, custom_decoder: Optional[Any] = None,
                norm_eps: float = 1e-5) -> None:
     """
-    :param dim_model: hidden dim, PyTorch name: d_model
+    :param output_dim: output dim, PyTorch name: d_model
     :param num_heads: number heads, PyTorch name: nhead
     :param num_encoder_layers: Number of encoder layers
     :param num_decoder_layers: Number of decoder layers
@@ -218,19 +218,19 @@ class Transformer(nn.Module):
     if custom_encoder is not None:
       self.encoder = custom_encoder
     else:
-      encoder_layer = TransformerEncoderLayer(dim_model, num_heads, dim_ff, drop, activation, norm_eps, False,
+      encoder_layer = TransformerEncoderLayer(output_dim, num_heads, dim_ff, drop, activation, norm_eps, False,
                                               nn.layer_norm)
       self.encoder = TransformerEncoder(encoder_layer, num_encoder_layers, nn.layer_norm, norm_eps)
 
     if custom_decoder is not None:
       self.decoder = custom_decoder
     else:
-      decoder_layer = TransformerDecoderLayer(dim_model, num_heads, dim_ff, drop, activation, norm_eps, False,
+      decoder_layer = TransformerDecoderLayer(output_dim, num_heads, dim_ff, drop, activation, norm_eps, False,
                                               nn.layer_norm)
       self.decoder = TransformerDecoder(decoder_layer, num_decoder_layers, nn.layer_norm, norm_eps)
 
     self.norm_eps = norm_eps
-    self.dim_model = dim_model
+    self.output_dim = output_dim
     self.num_heads = num_heads
 
   def forward(self, src: nn.LayerRef, tgt: nn.LayerRef) -> nn.LayerRef:
