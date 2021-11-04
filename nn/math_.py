@@ -27,6 +27,13 @@ def gelu(x: LayerRef) -> Layer:
   return activation(x, activation="gelu")
 
 
+def glu(v: LayerRef):
+  """GLU https://arxiv.org/abs/1612.08083"""
+  from . import split
+  a, b = split(v, axis='F', num_splits=2)
+  return a * sigmoid(b)
+
+
 def exp(x: LayerRef) -> Layer:
   """exp"""
   return activation(x, activation="exp")
