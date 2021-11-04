@@ -157,7 +157,6 @@ class TransformerDecoderLayer(nn.Module):
     return x
 
 
-
 class TransformerDecoder(nn.Module):
   """
   Defines the full Decoder of the standard transformer
