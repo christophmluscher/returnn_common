@@ -27,11 +27,6 @@ def gelu(x: LayerRef) -> Layer:
   return activation(x, activation="gelu")
 
 
-def glu(x: LayerRef) -> Layer:
-  """GLU https://arxiv.org/abs/1612.08083"""
-  return activation(x, activation='glu')
-
-
 def exp(x: LayerRef) -> Layer:
   """exp"""
   return activation(x, activation="exp")
