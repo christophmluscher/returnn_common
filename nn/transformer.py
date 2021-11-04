@@ -54,8 +54,12 @@ class TransformerEncoderLayer(nn.Module):
     return nn.dropout(x, self.dropout)
 
   def _feed_forward_block(self, x: LayerRef) -> LayerRef:
-    x = self.linear_out(nn.dropout(self.activation(self.linear_ff(x)), self.dropout))
-    return nn.dropout(x, self.dropout)
+    x = self.linear_ff(x)
+    x = self.activation(x)
+    x = nn.dropout(x, dropout=self.dropout)
+    x = self.linear_out(x)
+    x = nn.dropout(x, dropout=self.dropout)
+    return x
 
 
 class TransformerEncoder(nn.Module):
@@ -145,8 +149,13 @@ class TransformerDecoderLayer(nn.Module):
     return nn.dropout(x, self.dropout)
 
   def _feed_forward_block(self, x: LayerRef) -> LayerRef:
-    x = self.linear_out(nn.dropout(self.activation(self.linear_ff(x)), self.dropout))
-    return nn.dropout(x, self.dropout)
+    x = self.linear_ff(x)
+    x = self.activation(x)
+    x = nn.dropout(x, dropout=self.dropout)
+    x = self.linear_out(x)
+    x = nn.dropout(x, dropout=self.dropout)
+    return x
+
 
 
 class TransformerDecoder(nn.Module):
