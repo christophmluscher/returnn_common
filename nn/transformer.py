@@ -4,31 +4,31 @@ Transformer Modules
 
 from __future__ import annotations
 from typing import Optional, Any, Union
-from . import relu, layer_norm, dropout, LayerRef, Module, ModuleList, Linear, activation
+from . import relu, layer_norm, dropout, LayerRef, Module, ModuleList, Linear
 
 
 class TransformerEncoderLayer(Module):
   """
   Defines one layer of a standard transformer encoder
   """
-  def __init__(self, d_model: int, nhead: int, dim_feedforward: int = 2048, drop: float = 0.1, act: activation = relu,
+  def __init__(self, dim_model: int, num_heads: int, dim_ff: int = 2048, drop: float = 0.1, activation=relu,
                layer_norm_eps: float = 1e-5, norm_first: bool = False) -> None:
     """
-    :param d_model: hidden dim
-    :param nhead: number heads
-    :param dim_feedforward:
-    :param drop:
-    :param act: activation functional
-    :param layer_norm_eps:
+    :param dim_model: hidden dim, PyTorch name: d_model
+    :param num_heads: number heads, PyTorch name: nhead
+    :param dim_ff: dimension of feedforward layer, PyTorch name: dim_feedforward
+    :param drop: Dropout value, PyTorch name: dropout
+    :param activation: activation functional
+    :param layer_norm_eps: Epsilon value for layer normalization
     :param norm_first: Whether to do layer norm before or afterwards
     """
     super().__init__()
-    self.self_attn = MultiheadAttention(d_model, nhead, dropout=dropout)  # will change with Attention Modules
+    self.self_attn = MultiheadAttention(dim_model, num_heads, dropout=dropout)  # will change with Attention Modules
 
-    self.linear1 = Linear(dim_feedforward)
-    self.linear2 = Linear(d_model)
+    self.linear1 = Linear(dim_ff)
+    self.linear2 = Linear(dim_model)
 
-    self.activation = act
+    self.activationivation = activation
     self.norm_first = norm_first
     self.norm_eps = layer_norm_eps
     self.dropout = drop
@@ -54,7 +54,7 @@ class TransformerEncoderLayer(Module):
 
   # feed forward block
   def _ff_block(self, x: LayerRef) -> LayerRef:
-    x = self.linear2(dropout(self.activation(self.linear1(x)), self.dropout))
+    x = self.linear2(dropout(self.activationivation(self.linear1(x)), self.dropout))
     return dropout(x, self.dropout)
 
 
@@ -62,21 +62,21 @@ class TransformerEncoder(Module):
   """
   Defines the full Encoder of the standard transformer
   """
-  def __init__(self, encoder_layer: Union[TransformerEncoderLayer, Any], num_layers: int, normalization=None,
-               norm_eps: float = 1e-5):
+  def __init__(self, encoder_layer: Union[TransformerEncoderLayer, Any], num_layers: int, norm=None,
+               layer_norm_eps: float = 1e-5):
     """
-    :param encoder_layer:
-    :param num_layers:
-    :param normalization:
-    :param norm_eps:
+    :param encoder_layer: Encoder layer to be stacked num_layers times
+    :param num_layers: Number of layers
+    :param norm: normalization functional
+    :param layer_norm_eps: Epsilon value for layer normalization
     """
     super().__init__()
     import copy
     self.layers = ModuleList([copy.deepcopy(encoder_layer) for _ in range(num_layers)])
 
     self.num_layers = num_layers
-    self.norm = normalization
-    self.norm_eps = norm_eps
+    self.norm = norm
+    self.norm_eps = layer_norm_eps
 
   def forward(self, inp: LayerRef) -> LayerRef:
     """
@@ -96,28 +96,28 @@ class TransformerDecoderLayer(Module):
   """
   Defines one layer of a standard transformer decoder
   """
-  def __init__(self, d_model: int, nhead: int, dim_feedforward: int = 2048, drop: float = 0.1, act: activation = relu,
+  def __init__(self, dim_model: int, num_heads: int, dim_ff: int = 2048, drop: float = 0.1, activation=relu,
                layer_norm_eps: float = 1e-5, norm_first: bool = False):
     """
-    :param d_model: hidden dim
-    :param nhead: number heads
-    :param dim_feedforward:
-    :param drop:
-    :param act: activation functional
-    :param layer_norm_eps:
+    :param dim_model: hidden dim, PyTorch name: d_model
+    :param num_heads: number heads, PyTorch name: nhead
+    :param dim_ff: dimension of feedforward layer, PyTorch name: dim_feedforward
+    :param drop: Dropout value, PyTorch name: dropout
+    :param activation: activation functional
+    :param layer_norm_eps: Epsilon value for layer normalization
     :param norm_first: Whether to do layer norm before or afterwards
     """
     super().__init__()
     self.dropout = drop
-    self.self_attn = MultiheadAttention(d_model, nhead, dropout=self.dropout)  # will change with Attention Modules
-    self.multihead_attn = MultiheadAttention(d_model, nhead, dropout=self.dropout)  # will change with Attention Modules
+    self.self_attn = MultiheadAttention(dim_model, num_heads, dropout=self.dropout)  # will change with AttentionModules
+    self.multihead_attn = MultiheadAttention(dim_model, num_heads, dropout=self.dropout)  # will change with AM
 
-    self.linear1 = Linear(dim_feedforward)
-    self.linear2 = Linear(d_model)
+    self.linear1 = Linear(dim_ff)
+    self.linear2 = Linear(dim_model)
 
     self.norm_first = norm_first
     self.norm_eps = layer_norm_eps
-    self.activation = act
+    self.activationivation = activation
 
   def forward(self, tgt: LayerRef, memory: LayerRef) -> LayerRef:
     """
@@ -147,7 +147,7 @@ class TransformerDecoderLayer(Module):
 
   # feed forward block
   def _ff_block(self, x: LayerRef) -> LayerRef:
-    x = self.linear2(dropout(self.activation(self.linear1(x)), self.dropout))
+    x = self.linear2(dropout(self.activationivation(self.linear1(x)), self.dropout))
     return dropout(x, self.dropout)
 
 
@@ -155,20 +155,20 @@ class TransformerDecoder(Module):
   """
   Defines the full Decoder of the standard transformer
   """
-  def __init__(self, decoder_layer: Union[TransformerDecoderLayer, Any], num_layers: int, normalization=None,
-               norm_eps: float = 1e-5):
+  def __init__(self, decoder_layer: Union[TransformerDecoderLayer, Any], num_layers: int, norm=None,
+               layer_norm_eps: float = 1e-5):
       """
-      :param decoder_layer:
-      :param num_layers:
-      :param normalization:
-      :param norm_eps:
+      :param decoder_layer: Decoder layer to be stacked num_layers times
+      :param num_layers: Number of layers
+      :param norm: normalization functional
+      :param layer_norm_eps: Epsilon value for layer normalization
       """
       super(TransformerDecoder, self).__init__()
       import copy
       self.layers = ModuleList([copy.deepcopy(decoder_layer) for _ in range(num_layers)])
       self.num_layers = num_layers
-      self.norm = normalization
-      self.norm_eps = norm_eps
+      self.norm = norm
+      self.norm_eps = layer_norm_eps
 
   def forward(self, tgt: LayerRef, memory: LayerRef) -> LayerRef:
     """
@@ -188,27 +188,39 @@ class Transformer(Module):
   """
   Standard Transformer Module
   """
-  def __init__(self, d_model: int = 512, nhead: int = 8, num_encoder_layers: int = 6,
-               num_decoder_layers: int = 6, dim_feedforward: int = 2048, drop: float = 0.1,
-               act: activation = relu, custom_encoder: Optional[Any] = None, custom_decoder: Optional[Any] = None,
+  def __init__(self, dim_model: int = 512, num_heads: int = 8, num_encoder_layers: int = 6,
+               num_decoder_layers: int = 6, dim_ff: int = 2048, drop: float = 0.1,
+               activation=relu, custom_encoder: Optional[Any] = None, custom_decoder: Optional[Any] = None,
                layer_norm_eps: float = 1e-5) -> None:
+    """
+    :param dim_model: hidden dim, PyTorch name: d_model
+    :param num_heads: number heads, PyTorch name: nhead
+    :param num_encoder_layers: Number of encoder layers
+    :param num_decoder_layers: Number of decoder layers
+    :param dim_ff: dimension of feedforward layer, PyTorch name: dim_feedforward
+    :param drop: Dropout value, PyTorch name: dropout
+    :param activation: activation functional
+    :param custom_encoder: Custom Encoder layer to replace the standard layer
+    :param custom_decoder: Custom Decoder layer to replace the standard layer
+    :param layer_norm_eps: Epsilon value for layer normalization
+    """
     super().__init__()
 
     if custom_encoder is not None:
       self.encoder = custom_encoder
     else:
-      encoder_layer = TransformerEncoderLayer(d_model, nhead, dim_feedforward, drop, act, layer_norm_eps)
+      encoder_layer = TransformerEncoderLayer(dim_model, num_heads, dim_ff, drop, activation, layer_norm_eps)
       self.encoder = TransformerEncoder(encoder_layer, num_encoder_layers, layer_norm, layer_norm_eps)
 
     if custom_decoder is not None:
       self.decoder = custom_decoder
     else:
-      decoder_layer = TransformerDecoderLayer(d_model, nhead, dim_feedforward, drop, act, layer_norm_eps)
+      decoder_layer = TransformerDecoderLayer(dim_model, num_heads, dim_ff, drop, activation, layer_norm_eps)
       self.decoder = TransformerDecoder(decoder_layer, num_decoder_layers, layer_norm, layer_norm_eps)
 
     self.norm_eps = layer_norm_eps
-    self.d_model = d_model
-    self.nhead = nhead
+    self.dim_model = dim_model
+    self.num_heads = num_heads
 
   def forward(self, src: LayerRef, tgt: LayerRef) -> LayerRef:
     """
