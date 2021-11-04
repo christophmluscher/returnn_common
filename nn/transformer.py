@@ -84,7 +84,7 @@ class TransformerEncoder(nn.Module):
 
   def forward(self, inp: nn.LayerRef) -> nn.LayerRef:
     """
-    Executes the encoder layer as often as in num_layers defined
+    Applies every encoder layer initialized in self.layers.
     """
     output = inp
     for mod in self.layers:
@@ -164,7 +164,7 @@ class TransformerDecoder(nn.Module):
   Defines the full Decoder of the standard transformer
   """
   def __init__(self, decoder_layer: Union[TransformerDecoderLayer, Any], num_layers: int,
-               norm: Callable[[nn.LayerRef], nn.LayerRef] = nn.layer_norm, norm_eps: float = 1e-5):
+               norm: Callable = nn.layer_norm, norm_eps: float = 1e-5):
       """
       :param decoder_layer: Decoder layer to be stacked num_layers times
       :param num_layers: Number of layers
@@ -181,7 +181,7 @@ class TransformerDecoder(nn.Module):
 
   def forward(self, tgt: nn.LayerRef, memory: nn.LayerRef) -> nn.LayerRef:
     """
-    Executes the decoder layer as often as in num_layers defined
+    Applies every decoder layer initialized in self.layers.
     """
     output = tgt
     for mod in self.layers:
@@ -222,22 +222,18 @@ class Transformer(nn.Module):
     else:
       encoder_layer = TransformerEncoderLayer(
         dim_model=output_dim, num_heads=num_heads, dim_ff=dim_ff, dropout=dropout, activation=activation,
-        norm_eps=norm_eps, norm=norm
-      )
+        norm_eps=norm_eps, norm=norm)
       self.encoder = TransformerEncoder(
-        encoder_layer=encoder_layer, num_layers=num_encoder_layers, norm=norm, norm_eps=norm_eps
-      )
+        encoder_layer=encoder_layer, num_layers=num_encoder_layers, norm=norm, norm_eps=norm_eps)
 
     if custom_decoder is not None:
       self.decoder = custom_decoder
     else:
       decoder_layer = TransformerDecoderLayer(
         dim_model=output_dim, num_heads=num_heads, dim_ff=dim_ff, dropout=dropout, activation=activation,
-        norm_eps=norm_eps, norm=norm
-      )
+        norm_eps=norm_eps, norm=norm)
       self.decoder = TransformerDecoder(
-        decoder_layer=decoder_layer, num_layers=num_decoder_layers, norm=norm, norm_eps=norm_eps
-      )
+        decoder_layer=decoder_layer, num_layers=num_decoder_layers, norm=norm, norm_eps=norm_eps)
 
     self.norm_eps = norm_eps
     self.output_dim = output_dim
