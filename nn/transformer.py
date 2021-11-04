@@ -13,7 +13,7 @@ class TransformerEncoderLayer(nn.Module):
   """
   def __init__(self, dim_model: int, num_heads: int, dim_ff: int = 2048, dropout: float = 0.1,
                activation: Callable[[nn.LayerRef], nn.LayerRef] = nn.relu, norm_eps: float = 1e-5,
-               norm_first: bool = False, norm: Callable[[nn.LayerRef], nn.LayerRef] = nn.layer_norm) -> None:
+               norm_first: bool = False, norm=nn.layer_norm) -> None:
     """
     :param dim_model: hidden dim, PyTorch name: d_model
     :param num_heads: number heads, PyTorch name: nhead
@@ -67,7 +67,7 @@ class TransformerEncoder(nn.Module):
   Defines the full Encoder of the standard transformer
   """
   def __init__(self, encoder_layer: Union[TransformerEncoderLayer, Any], num_layers: int,
-               norm: Callable[[nn.LayerRef], nn.LayerRef] = nn.layer_norm, norm_eps: float = 1e-5):
+               norm=nn.layer_norm, norm_eps: float = 1e-5):
     """
     :param encoder_layer: Encoder layer to be stacked num_layers times
     :param num_layers: Number of layers
@@ -102,7 +102,7 @@ class TransformerDecoderLayer(nn.Module):
   """
   def __init__(self, dim_model: int, num_heads: int, dim_ff: int = 2048, dropout: float = 0.1,
                activation: Callable[[nn.LayerRef], nn.LayerRef] = nn.relu, norm_eps: float = 1e-5,
-               norm_first: bool = False, norm: Callable[[nn.LayerRef], nn.LayerRef] = nn.layer_norm):
+               norm_first: bool = False, norm=nn.layer_norm):
     """
     :param dim_model: hidden dim, PyTorch name: d_model
     :param num_heads: number heads, PyTorch name: nhead
@@ -164,7 +164,7 @@ class TransformerDecoder(nn.Module):
   Defines the full Decoder of the standard transformer
   """
   def __init__(self, decoder_layer: Union[TransformerDecoderLayer, Any], num_layers: int,
-               norm: Callable = nn.layer_norm, norm_eps: float = 1e-5):
+               norm=nn.layer_norm, norm_eps: float = 1e-5):
       """
       :param decoder_layer: Decoder layer to be stacked num_layers times
       :param num_layers: Number of layers
@@ -201,7 +201,7 @@ class Transformer(nn.Module):
                num_decoder_layers: int = 6, dim_ff: int = 2048, dropout: float = 0.1,
                activation: Callable[[nn.LayerRef], nn.LayerRef] = nn.relu,
                custom_encoder: Optional[Any] = None, custom_decoder: Optional[Any] = None,
-               norm_eps: float = 1e-5, norm: Callable[[nn.LayerRef], nn.LayerRef] = nn.layer_norm) -> None:
+               norm_eps: float = 1e-5, norm=nn.layer_norm) -> None:
     """
     :param output_dim: output dim, PyTorch name: d_model
     :param num_heads: number heads, PyTorch name: nhead
