@@ -5,6 +5,7 @@ Some basic math functions
 
 from .base import LayerRef, Layer
 from ._generated_layers import activation
+from typing import Optional
 
 
 def relu(x: LayerRef) -> Layer:
@@ -27,10 +28,10 @@ def gelu(x: LayerRef) -> Layer:
   return activation(x, activation="gelu")
 
 
-def glu(v: LayerRef) -> Layer:
+def glu(v: LayerRef, axis: Optional[str] = "F") -> Layer:
   """GLU https://arxiv.org/abs/1612.08083"""
   from . import split
-  a, b = split(v, axis='F', num_splits=2)
+  a, b = split(v, axis=axis, num_splits=2)
   return a * sigmoid(b)
 
 
